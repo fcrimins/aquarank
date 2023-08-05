@@ -12,4 +12,7 @@ else
 fi
 
 mkdir -p "$1"
-curl -Ls https://micro.mamba.pm/api/micromamba/$PLATFORM-$ARCH/latest | tar -xj -C "$1" --strip-components=1 bin/micromamba
+
+# changed `https` to `http` to correct "bzip2: Compressed file ends unexpectedly" error per here:
+#   https://github.com/mamba-org/mamba/issues/1675
+curl -Ls http://micro.mamba.pm/api/micromamba/$PLATFORM-$ARCH/latest | tar -xj -C "$1" --strip-components=1 bin/micromamba
