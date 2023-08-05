@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+make deps
+PYTHONPATH=. .venv/bin/python3 interview
