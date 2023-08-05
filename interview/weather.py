@@ -8,8 +8,6 @@ from typing import Optional
 import logging
 logging.basicConfig()
 logging.getLogger().setLevel(logging.WARN)
-_DEBUG_STATION = 'Foster Weather Station'  # set this to non-None to log debug messages for a single station
-_log_station = lambda station: _DEBUG_STATION and station == _DEBUG_STATION
 
 # a single day's aggregated weather station data
 _AggregateKey = namedtuple('_AggregateKey', ['station', 'date'])
@@ -79,19 +77,13 @@ def _read(reader) -> dict[_AggregateKey, _AggregateValue]:
     for i, row in enumerate(csv_reader):
         try:
             # parse input row
-            if _log_station(row[0]):
-                logging.debug(f'{i} -> {row}')
             station, dt, temp, *_ = row  # unpack the row (only first 3 columns matter for now)
             dt1 = datetime.strptime(dt, _INPUT_DATETIME_FORMAT)
             temp = float(temp)
-            if _log_station(row[0]):
-                logging.debug(f'{i} -> {station} ... {dt} ... {dt1} ... {temp}')
-            
+
             # update aggregate for this station-date
             key = _AggregateKey(station, dt1.date())
             aggregates[key] = _update_aggregate_value(aggregates.get(key), temp, dt1.time())
-            if _log_station(row[0]):
-                logging.debug(f'{aggregates[key]}\n')
 
         except Exception as e:
             # adding 2: 1 for index start at 0, another 1 to account for header
@@ -111,11 +103,4 @@ def _write(aggregates: dict[_AggregateKey, _AggregateValue], writer):
     csv_writer = csv.writer(writer)
     csv_writer.writerow(_OUTPUT_HEADER.split(','))
     for k, v in aggregates.items():
-        if _log_station(k.station):
-            logging.debug('\n')
         csv_writer.writerow([k.station, k.date.strftime(_OUTPUT_DATE_FORMAT), v.low, v.high, v.start, v.end])
-        if _log_station(k.station):
-            logging.debug(f'{k} -> {v}\n')
-
-
-
